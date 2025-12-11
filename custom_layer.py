@@ -1,6 +1,21 @@
 import numpy as np
 
+
 class BaseLayer:
+    """BaseLayer class from which all layers inherit
+    Callable object to use in types hints. Base object used to
+    create complete Layers like DenseLayer:
+
+    * in `__init__()` for initialize:
+        * trainable boolean
+        * params : dict to store forwards weights and biais
+        * grads : dict to store backwards weights and biais
+
+    * in ft_build mandatory function, initialize dimensions variable
+    * in ft_forward mandatory function
+    * in ft_backward mandatory function
+    """
+
     def __init__(self):
         self.trainable = True
         self.params = {}
@@ -8,6 +23,7 @@ class BaseLayer:
 
     def ft_build(self, dimensions: int):
         self.dimensions = dimensions
+        raise NotImplementedError
 
     def ft_forward(self, X: np.ndarray) -> np.ndarray:
         raise NotImplementedError
@@ -15,7 +31,20 @@ class BaseLayer:
     def ft_backward(self, d_out: np.ndarray) -> np.ndarray:
         raise NotImplementedError
 
+
 class DenseLayer(BaseLayer):
+    """DenseLayer using BaseLayer, to create layers
+    Args:
+        units : int -> Quantity of neurones.
+        activation : str -> type of activation `relu`, `sigmoid`, `softmax`.
+    
+    Attributes:
+        asdasd.
+
+    asdasd
+
+    """
+
     def __init__(self, units: int, activation: str = "relu"):
         super().__init__()
         self.units = units
@@ -31,7 +60,6 @@ class DenseLayer(BaseLayer):
         self.params["b"] = np.zeros((1, self.units))
         self.params["W"] = np.random.randn(dimensions, self.units) * limit
         self.is_built = True
-
 
     def ft_forward(self, X: np.ndarray) -> np.ndarray:
         if not self.is_built:
@@ -67,7 +95,6 @@ class DenseLayer(BaseLayer):
 
         return dX
 
-
     def ft_sigmoid(self, Z):
         sigmoid = 1.0 / (1.0 + np.exp(-Z))
         return sigmoid
@@ -102,7 +129,8 @@ class DenseLayer(BaseLayer):
         elif self.activation == "softmax":
             return self.ft_softmax(Z)
         else:
-            raise ValueError(f"Activation function {self.activation} not supported")
+            raise ValueError(
+                f"Activation function {self.activation} not supported")
 
     def ft_activation_backward(self, A):
         if self.activation == "sigmoid":
@@ -112,7 +140,9 @@ class DenseLayer(BaseLayer):
         elif self.activation == "softmax":
             return self.ft_d_softmax(A)
         else:
-            raise ValueError(f"Activation function {self.activation} not supported")
+            raise ValueError(
+                f"Activation function {self.activation} not supported")
+
 
 def main():
     layer = DenseLayer(units=3, activation="relu")
@@ -120,8 +150,6 @@ def main():
     X = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
     output = layer.ft_forward(X)
     print(output)
-
-
 
 
 if __name__ == "__main__":
