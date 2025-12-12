@@ -35,13 +35,16 @@ class BaseLayer:
 class DenseLayer(BaseLayer):
     """DenseLayer using BaseLayer, to create layers
     Args:
-        units : int -> Quantity of neurones.
-        activation : str -> type of activation `relu`, `sigmoid`, `softmax`.
-    
-    Attributes:
-        asdasd.
+        * units: int -> Quantity of neurones.
+        * activation: str -> type of activation `relu`, `sigmoid`, `softmax`.
 
-    asdasd
+    Notes:
+        * DenseLayer class initialize weights and bias values with Kaiming
+        initialization (values limits) and random values - ft_build().
+        * Forward method uses linear model as initial params `y = w * x + b`
+        but the activation is based of the initial model to transform it in
+        `sigmoid`, `softmax` or `relu`.
+        * Backward propagation uses dA = 
 
     """
 
@@ -74,9 +77,6 @@ class DenseLayer(BaseLayer):
         return A
 
     def ft_backward(self, dA: np.ndarray) -> np.ndarray:
-        """
-        dA = dL/dA (gradient venant de la couche suivante)
-        """
         W = self.params["W"]
         X = self.X
         Z = self.Z
