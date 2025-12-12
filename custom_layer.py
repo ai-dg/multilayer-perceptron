@@ -44,8 +44,10 @@ class DenseLayer(BaseLayer):
         * Forward method uses linear model as initial params `y = w * x + b`
         but the activation is based of the initial model to transform it in
         `sigmoid`, `softmax` or `relu`.
-        * Backward propagation uses dA = 
-
+            * Base linear model => z = w * X + b
+            * sigmoid = 1 / 1 + e^z
+            * softmax = e^(z - max(z)) / sum(e^(z - max(z)))
+            * relu = max(0, z)
     """
 
     def __init__(self, units: int, activation: str = "relu"):
