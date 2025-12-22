@@ -17,6 +17,54 @@ https://github.com/keras-team/keras/blob/master/keras/src/layers/layer.py
 Activations (relu, sigmoid, etc.)
 https://github.com/keras-team/keras/blob/master/keras/src/activations/activations.py
 
+### Baselayer - Linear
+
+$$
+z = w * X + b
+$$
+
+$$
+A = f(z)
+$$
+
+### Sigmoid
+Forward
+$$
+\sigma(z) = \frac{1}{1 + e^{-z}}
+$$
+
+
+Backward
+$$
+\sigma'(z) = \sigma(z)(1 - \sigma(z))
+$$
+
+### ReLU
+Forward
+$$
+\text{ReLU}(z) = \max(0, z)
+$$
+
+Backward
+$$
+\text{ReLU}'(z) =
+\begin{cases}
+1 & z > 0 \\
+0 & z \le 0
+\end{cases}
+$$
+
+### Softmax
+
+Forward
+$$
+\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_j e^{z_j}}
+$$
+
+
+
+
+
 ## custom_model.py
 Sequential class
 https://github.com/keras-team/keras/blob/master/keras/src/models/sequential.py

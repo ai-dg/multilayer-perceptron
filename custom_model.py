@@ -42,6 +42,7 @@ class CustomSequential:
         learning_rate: float = 0.001,
     ) -> None:
         
+        self.layers[-1].is_output = True
         opt_name = optimizer.lower()
         if opt_name == "sgd":
             self.optimizer = SGD(learning_rate=learning_rate)

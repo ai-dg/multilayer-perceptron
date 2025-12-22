@@ -163,7 +163,7 @@ class TestAdam:
         
         assert adam.t == 1
         
-        key = adam._get_key(layer, "W")
+        key = (id(layer), "W")
         assert key in adam.m
         assert key in adam.v
         
@@ -178,7 +178,7 @@ class TestAdam:
         
         adam.ft_step([layer])
         assert adam.t == 1
-        key = adam._get_key(layer, "W")
+        key = (id(layer), "W")
         m1 = adam.m[key].copy()
         v1 = adam.v[key].copy()
         
@@ -202,8 +202,8 @@ class TestAdam:
         
         adam.ft_step([layer])
         
-        key_W = adam._get_key(layer, "W")
-        key_b = adam._get_key(layer, "b")
+        key_W = (id(layer), "W")
+        key_b = (id(layer), "b")
         
         assert key_W in adam.m
         assert key_b in adam.m
@@ -223,8 +223,8 @@ class TestAdam:
         
         adam.ft_step([layer1, layer2])
         
-        key1 = adam._get_key(layer1, "W")
-        key2 = adam._get_key(layer2, "W")
+        key1 = (id(layer1), "W")
+        key2 = (id(layer2), "W")
         
         assert key1 in adam.m
         assert key2 in adam.m
@@ -243,7 +243,7 @@ class TestAdam:
 
         assert np.array_equal(layer.params["W"], initial_params)
         assert adam.t == initial_t + 1
-        key = adam._get_key(layer, "W")
+        key = (id(layer), "W")
         assert key not in adam.m
 
     def test_adam_step_missing_gradient(self):
@@ -267,7 +267,7 @@ class TestAdam:
         
         adam.ft_step([layer])
         
-        key = adam._get_key(layer, "W")
+        key = (id(layer), "W")
         assert adam.m[key].shape == layer.params["W"].shape
         assert adam.v[key].shape == layer.params["W"].shape
 
@@ -279,7 +279,7 @@ class TestAdam:
         layer.grads["W"] = np.array([[0.1]])
         
         adam.ft_step([layer])
-        key = adam._get_key(layer, "W")
+        key = (id(layer), "W")
         m = adam.m[key]
         v = adam.v[key]
         
@@ -295,13 +295,13 @@ class TestAdam:
         layer1 = MockLayer()
         layer2 = MockLayer()
         
-        key1 = adam._get_key(layer1, "W")
-        key2 = adam._get_key(layer2, "W")
-        key3 = adam._get_key(layer1, "b")
+        key1 = (id(layer1), "W")
+        key2 = (id(layer2), "W")
+        key3 = (id(layer1), "b")
         
         assert key1 != key2
         assert key1 != key3
-        assert adam._get_key(layer1, "W") == key1
+        assert (id(layer1), "W") == key1
 
 
 class TestOptimizersIntegration:

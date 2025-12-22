@@ -2,28 +2,15 @@ import numpy as np
 
 
 class BaseLayer:
-    """BaseLayer class from which all layers inherit
-    Callable object to use in types hints. Base object used to
-    create complete Layers like DenseLayer:
-
-    * in `__init__()` for initialize:
-        * trainable boolean
-        * params : dict to store forwards weights and biais
-        * grads : dict to store backwards weights and biais
-
-    * in ft_build mandatory function, initialize dimensions variable
-    * in ft_forward mandatory function
-    * in ft_backward mandatory function
-    """
-
     def __init__(self):
         self.trainable = True
         self.params = {}
         self.grads = {}
+        self.dimensions = 0
 
     def ft_build(self, dimensions: int):
         self.dimensions = dimensions
-        raise NotImplementedError
+        # raise NotImplementedError
 
     def ft_forward(self, X: np.ndarray) -> np.ndarray:
         raise NotImplementedError
@@ -33,27 +20,11 @@ class BaseLayer:
 
 
 class DenseLayer(BaseLayer):
-    """DenseLayer using BaseLayer, to create layers
-    Args:
-        * units: int -> Quantity of neurones.
-        * activation: str -> type of activation `relu`, `sigmoid`, `softmax`.
-
-    Notes:
-        * DenseLayer class initialize weights and bias values with Kaiming
-        initialization (values limits) and random values - ft_build().
-        * Forward method uses linear model as initial params `y = w * x + b`
-        but the activation is based of the initial model to transform it in
-        `sigmoid`, `softmax` or `relu`.
-            * Base linear model => z = w * X + b
-            * sigmoid = 1 / 1 + e^z
-            * softmax = e^(z - max(z)) / sum(e^(z - max(z)))
-            * relu = max(0, z)
-    """
-
-    def __init__(self, units: int, activation: str = "relu"):
+    def __init__(self, units: int, activation: str = "relu", is_output: bool = False):
         super().__init__()
         self.units = units
         self.activation = activation.lower()
+        self.is_output = is_output
         self.X = None
         self.Z = None
         self.A = None
@@ -81,12 +52,19 @@ class DenseLayer(BaseLayer):
     def ft_backward(self, dA: np.ndarray) -> np.ndarray:
         W = self.params["W"]
         X = self.X
-        Z = self.Z
         A = self.A
 
-        d_activation = self.ft_activation_backward(A)
+        if self.activation == "softmax":
+            if self.is_output:
+                dZ = dA
+            else:
+                dot = np.sum(dA * A, axis=1, keepdims=True)
+                dZ = A * (dA - dot)
 
-        dZ = dA * d_activation
+        elif self.activation == "sigmoid" and self.is_output:
+            dZ = dA
+        else:
+            dZ = dA * self.ft_activation_backward(A)
 
         dW = X.T @ dZ
         db = np.sum(dZ, axis=0, keepdims=True)
@@ -94,8 +72,8 @@ class DenseLayer(BaseLayer):
 
         self.grads["W"] = dW
         self.grads["b"] = db
-
         return dX
+
 
     def ft_sigmoid(self, Z):
         sigmoid = 1.0 / (1.0 + np.exp(-Z))
@@ -140,18 +118,35 @@ class DenseLayer(BaseLayer):
         elif self.activation == "relu":
             return self.ft_d_relu(A)
         elif self.activation == "softmax":
-            return self.ft_d_softmax(A)
+            return None
         else:
             raise ValueError(
                 f"Activation function {self.activation} not supported")
 
 
 def main():
-    layer = DenseLayer(units=3, activation="relu")
-    layer.ft_build(4)
+    layer = DenseLayer(units=1, activation="relu")
     X = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
+    layer.ft_build(X.shape[1])
     output = layer.ft_forward(X)
+
+    # import matplotlib.pyplot as plt
+    # import matplotlib
+    # matplotlib.use("TkAgg")
+    # plt.plot(output)
+    # plt.savefig("output.png")
+    # plt.show()
+    # plt.close()
+    print("Forward:")
     print(output)
+    output = layer.ft_backward(output)
+    print("Backward relu")
+    print(output)
+
+    # plt.plot(output)
+    # plt.show()
+
+    
 
 
 if __name__ == "__main__":
