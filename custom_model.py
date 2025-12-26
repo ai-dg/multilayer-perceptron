@@ -1,12 +1,12 @@
 import numpy as np
+import pickle as pkl
 from typing import Optional, Sequence
-
 from custom_layer import DenseLayer
 from optimizers import SGD, Adam, BaseOptimizer
-from losses import BinaryCrossEntropy, MeanSquaredError, CategoricalCrossEntropy, BaseLoss
+from losses import BinaryCrossEntropy, MeanSquaredError
+from losses import CategoricalCrossEntropy, BaseLoss
 from metrics import Accuracy, Precision, Recall, F1Score, BaseMetric
 from callbacks import History, EarlyStopping, Callback
-import pickle as pkl
 
 
 class CustomSequential:
@@ -16,52 +16,43 @@ class CustomSequential:
         self.optimizer: Optional[BaseOptimizer] = None
         self.loss: Optional[BaseLoss] = None
         self.metrics: list[BaseMetric] = []
+        self.history: Optional[History] = None
+        self.early_stopping: Optional[EarlyStopping] = None
+        self.callbacks: list[Callback] = []
 
-
-    def ft_add(self, layer: DenseLayer) -> None:
+    def ft_add(self, layer: DenseLayer):
         self.layers.append(layer)
 
-    def ft_build(self, input_dim: int) -> None:
-        """
-        Initialise les poids de chaque DenseLayer à partir de input_dim.
-        On propage la dimension de sortie de chaque couche comme dimension
-        d'entrée de la suivante.
-        """
-        current_dim = input_dim
+    def ft_build(self, num_features: int):
         for layer in self.layers:
-            layer.ft_build(current_dim)
+            layer.ft_build(num_features)
+            # Hidden and output layers have to be neurons dim
             if hasattr(layer, "units"):
-                current_dim = layer.units
+                num_features = layer.units
         self.isbuilt = True
 
-    def ft_compile(
-        self,
-        optimizer: str,
-        loss: str,
-        metrics: Optional[list[str]] = None,
-        learning_rate: float = 0.001,
-    ) -> None:
-        
-        self.layers[-1].is_output = True
-        opt_name = optimizer.lower()
-        if opt_name == "sgd":
+    def ft_choose_optimizer(self, optimizer: str, learning_rate: float):
+        optimizer = optimizer.lower()
+        if optimizer == "sgd":
             self.optimizer = SGD(learning_rate=learning_rate)
-        elif opt_name == "adam":
+        elif optimizer == "adam":
             self.optimizer = Adam(learning_rate=learning_rate)
         else:
             raise ValueError(f"Optimizer {optimizer} not supported")
 
-        loss_name = loss.lower()
-        if loss_name in ("binarycrossentropy", "binary_crossentropy", "bce"):
+    def ft_choose_loss(self, loss: str):
+        loss = loss.lower()
+        if loss in ("binarycrossentropy", "binary_crossentropy", "bce"):
             self.loss = BinaryCrossEntropy()
-        elif loss_name in ("meansquarederror", "mse", "mean_squared_error"):
-            self.loss = MeanSquaredError()
-        elif loss_name in ("categoricalcrossentropy", "categorical_crossentropy", "cce"):
+        elif loss in ("categoricalcrossentropy",
+                      "categorical_crossentropy", "cce"):
             self.loss = CategoricalCrossEntropy()
+        elif loss in ("meansquarederror", "mse", "mean_squared_error"):
+            self.loss = MeanSquaredError()
         else:
             raise ValueError(f"Loss {loss} not supported")
 
-        self.metrics = []
+    def ft_choose_metrics(self, metrics: Optional[list[str]]):
         metrics = metrics or []
         for name in metrics:
             m_name = name.lower()
@@ -76,17 +67,85 @@ class CustomSequential:
             else:
                 raise ValueError(f"Metric {name} not supported")
 
+    def ft_compile(
+        self,
+        optimizer: str,
+        loss: str,
+        metrics: Optional[list[str]] = None,
+        learning_rate: float = 0.001,
+    ):
 
-    def ft_forward(self, X: np.ndarray) -> np.ndarray:
-        out = X
+        self.layers[-1].is_output = True
+        self.ft_choose_optimizer(optimizer, learning_rate)
+        self.ft_choose_loss(loss)
+        self.ft_choose_metrics(metrics)
+
+    def ft_forward(self, X: np.ndarray):
         for layer in self.layers:
-            out = layer.ft_forward(out)
-        return out
+            X = layer.ft_forward(X)
+        return X
 
-    def ft_backward(self, d_out: np.ndarray) -> None:
-        grad = d_out
+    def ft_backward(self, dA: np.ndarray):
         for layer in reversed(self.layers):
-            grad = layer.ft_backward(grad)
+            dA = layer.ft_backward(dA)
+        return dA
+
+    def ft_callbacks_traitement(self,
+                                callbacks: Optional[Sequence["Callback"]]):
+        self.callbacks = list(callbacks) if callbacks is not None else []
+
+        histories = [cb for cb in self.callbacks if isinstance(cb, History)]
+        early_stops = [
+            cb for cb in self.callbacks if isinstance(
+                cb, EarlyStopping)]
+
+        if len(histories) > 1:
+            raise ValueError("Only one History callback is allowed.")
+        if len(early_stops) > 1:
+            raise ValueError("Only one EarlyStopping callback is allowed.")
+
+        if histories:
+            self.history = histories[0]
+        else:
+            self.history = History()
+            self.callbacks.append(self.history)
+
+        if early_stops:
+            self.early_stopping = early_stops[0]
+        # else:
+        #     self.early_stopping = EarlyStopping()
+        #     self.callbacks.append(self.early_stopping)
+
+    def ft_compute_logs(self, X_train, y_train, X_valid=None, y_valid=None):
+        y_train_pred = self.ft_forward(X_train)
+        logs: dict[str, float] = {"loss": float(
+            self.loss(y_train, y_train_pred))}
+
+        for metric in self.metrics:
+            name = metric.__class__.__name__.lower()
+            logs[name] = float(metric.ft_evaluate(y_train, y_train_pred))
+
+        if X_valid is not None and y_valid is not None:
+            y_valid_pred = self.ft_forward(X_valid)
+            logs["val_loss"] = float(self.loss(y_valid, y_valid_pred))
+            for metric in self.metrics:
+                name = metric.__class__.__name__.lower()
+                logs["val_" +
+                     name] = float(metric.ft_evaluate(y_valid, y_valid_pred))
+
+        return logs
+
+    def ft_format_logs(self, epoch: int, epochs: int, logs: dict[str, float]):
+        parts = [f"epoch {epoch + 1:02d}/{epochs:02d}"]
+        for k in ["loss", "val_loss"]:
+            if k in logs:
+                parts.append(f"{k}: {logs[k]:.4f}")
+
+        for k, v in logs.items():
+            if k not in ("loss", "val_loss"):
+                parts.append(f"{k.lower()}: {v:.4f}")
+
+        return " - ".join(parts)
 
     def ft_fit(
         self,
@@ -97,134 +156,89 @@ class CustomSequential:
         batch_size: int = 32,
         epochs: int = 100,
         callbacks: Optional[Sequence[Callback]] = None,
-    ) -> History:
+    ):
         if self.loss is None or self.optimizer is None:
             raise RuntimeError("Model must be compiled before calling ft_fit.")
 
         if not self.isbuilt:
             self.ft_build(X_train.shape[1])
 
-        callbacks = list(callbacks) if callbacks is not None else []
-        history_cb: Optional[History] = None
-        early_stopping_cb: Optional[EarlyStopping] = None
+        self.ft_callbacks_traitement(callbacks)
 
-        for cb in callbacks:
-            if isinstance(cb, History):
-                history_cb = cb
-            if isinstance(cb, EarlyStopping):
-                early_stopping_cb = cb
-
-        if history_cb is None:
-            history_cb = History()
-            callbacks.append(history_cb)
-        if early_stopping_cb is None:
-            early_stopping_cb = EarlyStopping()
-            callbacks.append(early_stopping_cb)
-
-        n_samples = X_train.shape[0]
-
-        for cb in callbacks:
+        N = X_train.shape[0]
+        for cb in self.callbacks:
             cb.ft_on_train_begin(logs={})
 
         for epoch in range(epochs):
-            indices = np.arange(n_samples)
+            indices = np.arange(N)
             np.random.shuffle(indices)
             X_shuffled = X_train[indices]
             y_shuffled = y_train[indices]
-
-            for cb in callbacks:
+            for cb in self.callbacks:
                 cb.ft_on_epoch_begin(epoch, logs={})
 
-            for start in range(0, n_samples, batch_size):
+            for start in range(0, N, batch_size):
                 end = start + batch_size
                 X_batch = X_shuffled[start:end]
                 y_batch = y_shuffled[start:end]
-
                 y_pred = self.ft_forward(X_batch)
-
-                batch_loss = self.loss(y_batch, y_pred)
-
-                d_out = self.loss.ft_gradient(y_batch, y_pred)
-
-                self.ft_backward(d_out)
-
+                self.loss(y_batch, y_pred)
+                dA = self.loss.ft_gradient(y_batch, y_pred)
+                self.ft_backward(dA)
                 self.optimizer.ft_step(self.layers)
 
-            y_train_pred = self.ft_forward(X_train)
-            train_loss = self.loss(y_train, y_train_pred)
+            logs = self.ft_compute_logs(X_train, y_train, X_valid, y_valid)
 
-            logs: dict[str, float] = {
-                "loss": float(train_loss),
-            }
-
-            for metric in self.metrics:
-                value = metric.ft_evaluate(y_train, y_train_pred)
-                metric_name = metric.__class__.__name__
-                logs[metric_name] = float(value)
-
-            if X_valid is not None and y_valid is not None:
-                y_valid_pred = self.ft_forward(X_valid)
-                val_loss = self.loss(y_valid, y_valid_pred)
-                logs["val_loss"] = float(val_loss)
-
-                for metric in self.metrics:
-                    value = metric.ft_evaluate(y_valid, y_valid_pred)
-                    metric_name = metric.__class__.__name__
-                    logs["val_" + metric_name] = float(value)
-
-            for cb in callbacks:
+            for cb in self.callbacks:
                 cb.ft_on_epoch_end(epoch, logs)
 
-            
-            epoch_str = f"epoch {epoch + 1:02d}/{epochs}"
-            log_str = f" - loss: {logs['loss']:.4f}"
-            if "val_loss" in logs:
-                log_str += f" - val_loss: {logs['val_loss']:.4f}"
-            for metric_name, metric_value in logs.items():
-                if metric_name not in ["loss", "val_loss"] and not metric_name.startswith("val_"):
-                    log_str += f" - {metric_name.lower()}: {metric_value:.4f}"
-                elif metric_name.startswith("val_") and metric_name != "val_loss":
-                    log_str += f" - val_{metric_name[4:].lower()}: {metric_value:.4f}"
-            print(epoch_str + log_str)
+            print(self.ft_format_logs(epoch, epochs, logs))
 
-            if getattr(early_stopping_cb, "stop_training", False):
+            if self.early_stopping is not None and \
+                    self.early_stopping.stop_training:
                 print(f"Early stopping at epoch {epoch + 1}")
                 break
 
-        for cb in callbacks:
+        for cb in self.callbacks:
             cb.ft_on_train_end(logs={})
 
-        return history_cb
-
+        return self.history
 
     def ft_evaluate(self, X: np.ndarray, y: np.ndarray):
         if self.loss is None:
-            raise RuntimeError("Model must be compiled before calling ft_evaluate.")
-        y_pred = self.ft_forward(X)
-        loss = self.loss(y, y_pred)
-        metrics_values = [metric.ft_evaluate(y, y_pred) for metric in self.metrics]
-        return loss, metrics_values
+            raise RuntimeError(
+                "Model must be compiled before calling ft_evaluate.")
 
-    def ft_predict(self, X: np.ndarray) -> np.ndarray:
-        return self.ft_forward(X)
+        y_pred = self.ft_forward(X)
+        loss_value = float(self.loss(y, y_pred))
+
+        metrics_dict = {}
+        for metric in self.metrics:
+            name = getattr(metric, "name", metric.__class__.__name__)
+            metrics_dict[name] = float(metric.ft_evaluate(y, y_pred))
+
+        return loss_value, metrics_dict
+
+    def ft_predict(self, X: np.ndarray):
+        y_pred = self.ft_forward(X)
+        return y_pred
 
     def ft_get_weights(self):
-        return [layer.params for layer in self.layers]
+        params = []
+        for layer in self.layers:
+            params.append(layer.params)
+        return params
 
     def ft_set_weights(self, weights_list):
         for layer, weights in zip(self.layers, weights_list):
             layer.params = weights
             layer.grads = {}
 
-    def ft_save(self, path: str) -> None:
-        """
-        Sauvegarde seulement la liste des layers (architecture + poids).
-        L'optimizer et les callbacks ne sont pas sauvegardés.
-        """
+    def ft_save(self, path: str):
         with open(path, "wb") as f:
             pkl.dump(self.layers, f)
 
-    def ft_load(self, path: str) -> None:
+    def ft_load(self, path: str):
         with open(path, "rb") as f:
             self.layers = pkl.load(f)
         self.isbuilt = True

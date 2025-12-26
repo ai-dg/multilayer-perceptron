@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class BaseLoss:
     def __init__(self, eps: float = 1e-15):
         self.eps = eps
@@ -12,14 +13,14 @@ class BaseLoss:
 
 
 class BinaryCrossEntropy(BaseLoss):
-    def __call__(self, y_true : np.ndarray, y_pred : np.ndarray):
+    def __call__(self, y_true: np.ndarray, y_pred: np.ndarray):
         y_pred = np.clip(y_pred, self.eps, 1.0 - self.eps)
         L_sum = y_true * np.log(y_pred) \
             + (1.0 - y_true) * np.log(1.0 - y_pred)
         L = -np.mean(L_sum)
         return L
 
-    def ft_gradient(self, y_true : np.ndarray, y_pred : np.ndarray):
+    def ft_gradient(self, y_true: np.ndarray, y_pred: np.ndarray):
         y_pred = np.clip(y_pred, self.eps, 1.0 - self.eps)
         N = y_true.shape[0]
         dL_dZ = y_pred - y_true
@@ -28,28 +29,28 @@ class BinaryCrossEntropy(BaseLoss):
 
 
 class CategoricalCrossEntropy(BaseLoss):
-    def __call__(self, y_true : np.ndarray, y_pred : np.ndarray):
+    def __call__(self, y_true: np.ndarray, y_pred: np.ndarray):
         y_pred = np.clip(y_pred, self.eps, 1.0 - self.eps)
-
-        per_sample = -np.sum(y_true * np.log(y_pred), axis=1)
-        L = np.mean(per_sample)
+        L_sum = -np.sum(y_true * np.log(y_pred), axis=1)
+        L = np.mean(L_sum)
         return L
 
-    def ft_gradient(self, y_true : np.ndarray, y_pred : np.ndarray):
+    def ft_gradient(self, y_true: np.ndarray, y_pred: np.ndarray):
         y_pred = np.clip(y_pred, self.eps, 1.0 - self.eps)
-        n_samples = y_true.shape[0]
-        n_samples = y_true.shape[0] 
-        return (y_pred - y_true) / n_samples
+        N = y_true.shape[0]
+        dL_dZ = y_pred - y_true
+        dL_dZ_batch = dL_dZ / N
+        return dL_dZ_batch
 
 
 class MeanSquaredError(BaseLoss):
-    def __call__(self, y_true : np.ndarray, y_pred : np.ndarray):
+    def __call__(self, y_true: np.ndarray, y_pred: np.ndarray):
         L = np.mean((y_pred - y_true) ** 2)
         return L
 
-    def ft_gradient(self, y_true : np.ndarray, y_pred : np.ndarray):
-        n_samples = y_true.shape[0]
-        dL_dy_pred = 2.0 * (y_pred - y_true) / n_samples
+    def ft_gradient(self, y_true: np.ndarray, y_pred: np.ndarray):
+        N = y_true.shape[0]
+        dL_dy_pred = 2.0 * (y_pred - y_true) / N
         return dL_dy_pred
 
 

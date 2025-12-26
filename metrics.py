@@ -9,81 +9,63 @@ class BaseMetric:
         raise NotImplementedError
 
 
-def _to_labels_true(y):
-    y = np.asarray(y)
+def ft_y_to_binary_or_labels(y):
     if y.ndim == 2 and y.shape[1] > 1:
-        return np.argmax(y, axis=1)
-    return y.reshape(-1)
-
-
-def _to_labels_pred(y):
-    y = np.asarray(y)
-    if y.ndim == 2 and y.shape[1] > 1:
-        return np.argmax(y, axis=1)
-    y_flat = y.reshape(-1)
-    return (y_flat >= 0.5).astype(int)
+        if y.shape[1] == 2:
+            y = y[:, 0].astype(int)
+            return y
+        y = np.argmax(y, axis=1).astype(int)
+        return y
+    y = y.reshape(-1)
+    if np.all(np.isclose(y, np.round(y))):
+        y = y.astype(int)
+        return y
+    y = (y >= 0.5).astype(int)
+    return y
 
 
 class Accuracy(BaseMetric):
     def ft_evaluate(self, y_true, y_pred) -> float:
-        y_true = _to_labels_true(y_true)
-        y_pred = _to_labels_pred(y_pred)
-        return float(np.mean(y_true == y_pred))
+        y_true = ft_y_to_binary_or_labels(y_true)
+        y_pred = ft_y_to_binary_or_labels(y_pred)
+        accuracy = float(np.mean(y_true == y_pred))
+        return accuracy
 
 
 class Precision(BaseMetric):
     def ft_evaluate(self, y_true, y_pred) -> float:
-        y_true = _to_labels_true(y_true)
-        y_pred = _to_labels_pred(y_pred)
-
-        classes = np.unique(y_true)
-        precisions = []
-
-        for c in classes:
-            tp = np.sum((y_pred == c) & (y_true == c))
-            fp = np.sum((y_pred == c) & (y_true != c))
-
-            if tp + fp == 0:
-                precisions.append(0.0)
-            else:
-                precisions.append(tp / (tp + fp))
-
-        return float(np.mean(precisions)) if len(precisions) > 0 else 0.0
+        y_true = ft_y_to_binary_or_labels(y_true)
+        y_pred = ft_y_to_binary_or_labels(y_pred)
+        TP = np.sum((y_pred == 1) & (y_true == 1))
+        FP = np.sum((y_pred == 1) & (y_true == 0))
+        if TP + FP == 0:
+            return 0.0
+        precision = float(TP / (TP + FP))
+        return precision
 
 
 class Recall(BaseMetric):
-
     def ft_evaluate(self, y_true, y_pred) -> float:
-        y_true = _to_labels_true(y_true)
-        y_pred = _to_labels_pred(y_pred)
-
-        classes = np.unique(y_true)
-        recalls = []
-
-        for c in classes:
-            tp = np.sum((y_pred == c) & (y_true == c))
-            fn = np.sum((y_pred != c) & (y_true == c))
-
-            if tp + fn == 0:
-                recalls.append(0.0)
-            else:
-                recalls.append(tp / (tp + fn))
-
-        return float(np.mean(recalls)) if len(recalls) > 0 else 0.0
+        y_true = ft_y_to_binary_or_labels(y_true)
+        y_pred = ft_y_to_binary_or_labels(y_pred)
+        TP = np.sum((y_pred == 1) & (y_pred == 1))
+        FN = np.sum((y_pred == 0) & (y_true == 1))
+        if TP + FN == 0:
+            return 0.0
+        recall = float(TP / (TP + FN))
+        return recall
 
 
 class F1Score(BaseMetric):
     def ft_evaluate(self, y_true, y_pred) -> float:
-        precision_metric = Precision()
-        recall_metric = Recall()
-
-        p = precision_metric.ft_evaluate(y_true, y_pred)
-        r = recall_metric.ft_evaluate(y_true, y_pred)
-
-        if p + r == 0:
+        precision_class = Precision()
+        recall_class = Recall()
+        precision = precision_class.ft_evaluate(y_true, y_pred)
+        recall = recall_class.ft_evaluate(y_true, y_pred)
+        if (recall + precision) == 0:
             return 0.0
-
-        return float(2.0 * p * r / (p + r))
+        F1 = float(2 * ((precision * recall) / (precision + recall)))
+        return F1
 
 
 def main():

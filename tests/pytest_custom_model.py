@@ -69,7 +69,7 @@ class TestCustomSequentialBuild:
         """Test de build avec une seule couche."""
         model = CustomSequential()
         model.ft_add(DenseLayer(units=5, activation="relu"))
-        model.ft_build(input_dim=10)
+        model.ft_build(num_features=10)
         assert model.isbuilt is True
         assert "W" in model.layers[0].params
         assert model.layers[0].params["W"].shape == (10, 5)
@@ -79,7 +79,7 @@ class TestCustomSequentialBuild:
         model = CustomSequential()
         model.ft_add(DenseLayer(units=5, activation="relu"))
         model.ft_add(DenseLayer(units=3, activation="sigmoid"))
-        model.ft_build(input_dim=10)
+        model.ft_build(num_features=10)
         assert model.isbuilt is True
         assert model.layers[0].params["W"].shape == (10, 5)
         assert model.layers[1].params["W"].shape == (5, 3)
@@ -90,7 +90,7 @@ class TestCustomSequentialBuild:
         model.ft_add(DenseLayer(units=8, activation="relu"))
         model.ft_add(DenseLayer(units=4, activation="relu"))
         model.ft_add(DenseLayer(units=2, activation="sigmoid"))
-        model.ft_build(input_dim=16)
+        model.ft_build(num_features=16)
         assert model.isbuilt is True
         assert model.layers[0].params["W"].shape == (16, 8)
         assert model.layers[1].params["W"].shape == (8, 4)
@@ -186,7 +186,7 @@ class TestCustomSequentialForward:
         """Test de forward avec une seule couche."""
         model = CustomSequential()
         model.ft_add(DenseLayer(units=3, activation="relu"))
-        model.ft_build(input_dim=5)
+        model.ft_build(num_features=5)
         X = np.random.randn(10, 5)
         output = model.ft_forward(X)
         assert output.shape == (10, 3)
@@ -196,7 +196,7 @@ class TestCustomSequentialForward:
         model = CustomSequential()
         model.ft_add(DenseLayer(units=8, activation="relu"))
         model.ft_add(DenseLayer(units=3, activation="sigmoid"))
-        model.ft_build(input_dim=10)
+        model.ft_build(num_features=10)
         X = np.random.randn(5, 10)
         output = model.ft_forward(X)
         assert output.shape == (5, 3)
@@ -207,7 +207,7 @@ class TestCustomSequentialForward:
         model.ft_add(DenseLayer(units=6, activation="relu"))
         model.ft_add(DenseLayer(units=4, activation="relu"))
         model.ft_add(DenseLayer(units=2, activation="softmax"))
-        model.ft_build(input_dim=8)
+        model.ft_build(num_features=8)
         X = np.random.randn(3, 8)
         output = model.ft_forward(X)
         assert output.shape == (3, 2)
@@ -221,7 +221,7 @@ class TestCustomSequentialBackward:
         """Test de backward avec une seule couche."""
         model = CustomSequential()
         model.ft_add(DenseLayer(units=3, activation="relu"))
-        model.ft_build(input_dim=5)
+        model.ft_build(num_features=5)
         X = np.random.randn(10, 5)
         model.ft_forward(X)
         d_out = np.random.randn(10, 3)
@@ -234,7 +234,7 @@ class TestCustomSequentialBackward:
         model = CustomSequential()
         model.ft_add(DenseLayer(units=8, activation="relu"))
         model.ft_add(DenseLayer(units=3, activation="sigmoid"))
-        model.ft_build(input_dim=10)
+        model.ft_build(num_features=10)
         X = np.random.randn(5, 10)
         model.ft_forward(X)
         d_out = np.random.randn(5, 3)
@@ -299,7 +299,7 @@ class TestCustomSequentialFit:
         y_train = np.random.randint(0, 2, (20, 1)).astype(float)
         
         history = model.ft_fit(X_train, y_train, epochs=2, batch_size=10)
-        assert "Accuracy" in history.history
+        assert "accuracy" in history.history
 
     def test_fit_with_callbacks(self):
         """Test d'entraînement avec callbacks personnalisés."""
@@ -358,7 +358,7 @@ class TestCustomSequentialEvaluate:
         model = CustomSequential()
         model.ft_add(DenseLayer(units=5, activation="relu"))
         model.ft_add(DenseLayer(units=1, activation="sigmoid"))
-        model.ft_build(input_dim=10)
+        model.ft_build(num_features=10)
         model.ft_compile(optimizer="sgd", loss="bce")
         
         X = np.random.randn(10, 10)
@@ -375,7 +375,7 @@ class TestCustomSequentialEvaluate:
         model = CustomSequential()
         model.ft_add(DenseLayer(units=5, activation="relu"))
         model.ft_add(DenseLayer(units=1, activation="sigmoid"))
-        model.ft_build(input_dim=10)
+        model.ft_build(num_features=10)
         model.ft_compile(optimizer="sgd", loss="bce", metrics=["accuracy"])
         
         X = np.random.randn(10, 10)
@@ -390,7 +390,7 @@ class TestCustomSequentialEvaluate:
         """Test que evaluate lève une erreur si le modèle n'est pas compilé."""
         model = CustomSequential()
         model.ft_add(DenseLayer(units=5, activation="sigmoid"))
-        model.ft_build(input_dim=10)
+        model.ft_build(num_features=10)
         X = np.random.randn(10, 10)
         y = np.random.randint(0, 2, (10, 1)).astype(float)
         
@@ -405,7 +405,7 @@ class TestCustomSequentialPredict:
         """Test de prédiction simple."""
         model = CustomSequential()
         model.ft_add(DenseLayer(units=3, activation="sigmoid"))
-        model.ft_build(input_dim=5)
+        model.ft_build(num_features=5)
         
         X = np.random.randn(10, 5)
         predictions = model.ft_predict(X)
@@ -417,7 +417,7 @@ class TestCustomSequentialPredict:
         model = CustomSequential()
         model.ft_add(DenseLayer(units=8, activation="relu"))
         model.ft_add(DenseLayer(units=2, activation="softmax"))
-        model.ft_build(input_dim=10)
+        model.ft_build(num_features=10)
         
         X = np.random.randn(5, 10)
         predictions = model.ft_predict(X)
@@ -433,7 +433,7 @@ class TestCustomSequentialWeights:
         model = CustomSequential()
         model.ft_add(DenseLayer(units=5, activation="relu"))
         model.ft_add(DenseLayer(units=3, activation="sigmoid"))
-        model.ft_build(input_dim=10)
+        model.ft_build(num_features=10)
         
         weights = model.ft_get_weights()
         assert len(weights) == 2
@@ -447,7 +447,7 @@ class TestCustomSequentialWeights:
         model = CustomSequential()
         model.ft_add(DenseLayer(units=5, activation="relu"))
         model.ft_add(DenseLayer(units=3, activation="sigmoid"))
-        model.ft_build(input_dim=10)
+        model.ft_build(num_features=10)
         
         original_weights = model.ft_get_weights()
         
@@ -466,7 +466,7 @@ class TestCustomSequentialWeights:
         """Test que set_weights efface les gradients."""
         model = CustomSequential()
         model.ft_add(DenseLayer(units=5, activation="relu"))
-        model.ft_build(input_dim=10)
+        model.ft_build(num_features=10)
         
         X = np.random.randn(5, 10)
         model.ft_forward(X)
@@ -490,7 +490,7 @@ class TestCustomSequentialSaveLoad:
         model1 = CustomSequential()
         model1.ft_add(DenseLayer(units=5, activation="relu"))
         model1.ft_add(DenseLayer(units=2, activation="sigmoid"))
-        model1.ft_build(input_dim=10)
+        model1.ft_build(num_features=10)
         
         weights1 = model1.ft_get_weights()
         
@@ -522,7 +522,7 @@ class TestCustomSequentialSaveLoad:
         model1.ft_add(DenseLayer(units=8, activation="relu"))
         model1.ft_add(DenseLayer(units=4, activation="relu"))
         model1.ft_add(DenseLayer(units=2, activation="softmax"))
-        model1.ft_build(input_dim=16)
+        model1.ft_build(num_features=16)
         
         with tempfile.NamedTemporaryFile(delete=False, suffix='.pkl') as f:
             temp_path = f.name

@@ -1,18 +1,3 @@
-# Tests manuels pour la présentation
-
-Ce document contient les commandes à exécuter manuellement pour tester le projet lors de la présentation.
-
-## Prérequis
-
-- Le fichier `datasets/data.csv` doit exister
-- Les dossiers `datasets/` et `models/` seront créés automatiquement
-
----
-
-## Test 1 : Split du dataset
-
-Sépare le dataset en train (80%) et validation (20%).
-
 ```bash
 python mlp.py --mode split \
   --dataset ./datasets/data.csv \
@@ -22,24 +7,8 @@ python mlp.py --mode split \
   --seed 42
 ```
 
-**Résultat attendu :**
-```
-x_train shape : (XXX, 30)
-x_valid shape : (XXX, 30)
-Train saved to ./datasets/train.npz
-Valid saved to ./datasets/valid.npz
-```
-
----
-
-## Test 2 : Entraînement du modèle (configuration par défaut)
-
-Entraîne le modèle avec la configuration recommandée du sujet.
-
 ```bash
 python mlp.py --mode train \
-  --train_data ./datasets/train.npz \
-  --valid_data ./datasets/valid.npz \
   --model_path ./models/model.pkl \
   --layers 24 24 \
   --epochs 70 \
@@ -50,29 +19,9 @@ python mlp.py --mode train \
   --curve_prefix mlp
 ```
 
-**Résultat attendu :**
-- Affichage des métriques à chaque epoch :
-  ```
-  epoch 01/70 - loss: 0.XXXX - val_loss: 0.XXXX - accuracy: 0.XXXX - val_accuracy: 0.XXXX
-  epoch 02/70 - loss: 0.XXXX - val_loss: 0.XXXX - accuracy: 0.XXXX - val_accuracy: 0.XXXX
-  ...
-  epoch 70/70 - loss: 0.XXXX - val_loss: 0.XXXX - accuracy: 0.XXXX - val_accuracy: 0.XXXX
-  > saving model './models/model.pkl' to disk...
-  Learning curves saved with prefix 'mlp_*.png'
-  ```
-- Génération de `mlp_loss.png` et `mlp_accuracy.png`
-- Accuracy finale typique : **95-98%**
-
----
-
-## Test 3 : Entraînement avec plusieurs métriques
-
-Entraîne le modèle en affichant plusieurs métriques (bonus).
 
 ```bash
 python mlp.py --mode train \
-  --train_data ./datasets/train.npz \
-  --valid_data ./datasets/valid.npz \
   --model_path ./models/model_metrics.pkl \
   --layers 24 24 \
   --epochs 50 \
@@ -83,20 +32,9 @@ python mlp.py --mode train \
   --curve_prefix mlp_full
 ```
 
-**Résultat attendu :**
-- Affichage de toutes les métriques à chaque epoch
-- Génération des graphiques avec toutes les métriques
-
----
-
-## Test 4 : Entraînement avec Early Stopping (bonus)
-
-Entraîne le modèle avec early stopping pour éviter le surapprentissage.
 
 ```bash
 python mlp.py --mode train \
-  --train_data ./datasets/train.npz \
-  --valid_data ./datasets/valid.npz \
   --model_path ./models/model_earlystop.pkl \
   --layers 24 24 \
   --epochs 100 \
@@ -109,22 +47,10 @@ python mlp.py --mode train \
   --min_delta 0.001 \
   --curve_prefix mlp_earlystop
 ```
-
-**Résultat attendu :**
-- L'entraînement s'arrête automatiquement si la validation loss ne s'améliore plus
-- Message : `Early stopping at epoch XX`
-
 ---
 
-## Test 5 : Entraînement avec différentes architectures
-
-Teste différentes architectures de réseau.
-
-### Architecture 1 : 3 hidden layers
 ```bash
 python mlp.py --mode train \
-  --train_data ./datasets/train.npz \
-  --valid_data ./datasets/valid.npz \
   --model_path ./models/model_3layers.pkl \
   --layers 24 24 24 \
   --epochs 50 \
@@ -135,11 +61,8 @@ python mlp.py --mode train \
   --curve_prefix mlp_3layers
 ```
 
-### Architecture 2 : Plus de neurones
 ```bash
 python mlp.py --mode train \
-  --train_data ./datasets/train.npz \
-  --valid_data ./datasets/valid.npz \
   --model_path ./models/model_large.pkl \
   --layers 48 48 \
   --epochs 50 \
@@ -150,11 +73,8 @@ python mlp.py --mode train \
   --curve_prefix mlp_large
 ```
 
-### Architecture 3 : SGD au lieu d'Adam
 ```bash
 python mlp.py --mode train \
-  --train_data ./datasets/train.npz \
-  --valid_data ./datasets/valid.npz \
   --model_path ./models/model_sgd.pkl \
   --layers 24 24 \
   --epochs 70 \
@@ -165,42 +85,22 @@ python mlp.py --mode train \
   --curve_prefix mlp_sgd
 ```
 
----
-
-## Test 6 : Prédiction et évaluation
-
-Charge un modèle entraîné et évalue sur le dataset de validation.
-
 ```bash
 python mlp.py --mode predict \
   --model_path ./models/model.pkl \
   --predict_data ./datasets/valid.npz
 ```
-
-**Résultat attendu :**
-```
-Binary cross-entropy on dataset: 0.XXXXXX
-```
-
 ---
 
-## Test 7 : Pipeline complet
-
-Exécute le pipeline complet : split → train → predict.
 
 ```bash
-# 1. Split
 python mlp.py --mode split \
   --dataset ./datasets/data.csv \
-  --train_out ./datasets/train.npz \
-  --valid_out ./datasets/valid.npz \
   --valid_ratio 0.2 \
   --seed 42
 
 # 2. Train
 python mlp.py --mode train \
-  --train_data ./datasets/train.npz \
-  --valid_data ./datasets/valid.npz \
   --model_path ./models/model.pkl \
   --layers 24 24 \
   --epochs 70 \

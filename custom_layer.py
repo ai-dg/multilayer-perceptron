@@ -20,7 +20,11 @@ class BaseLayer:
 
 
 class DenseLayer(BaseLayer):
-    def __init__(self, units: int, activation: str = "relu", is_output: bool = False):
+    def __init__(
+            self,
+            units: int,
+            activation: str = "relu",
+            is_output: bool = False):
         super().__init__()
         self.units = units
         self.activation = activation.lower()
@@ -38,6 +42,19 @@ class DenseLayer(BaseLayer):
         self.is_built = True
 
     def ft_forward(self, X: np.ndarray) -> np.ndarray:
+        """
+        Example students and features
+        Input layer:
+            Z = X @ W + b
+            X.shape = (students, features)
+            w.shape = (features, neurons)
+            Z.shape = (students, neurons)
+
+        Hidden and output layer:
+            X.shape = (students, neurons)
+            w.shape = (neurons, neurons)
+            Z.shape = (students, neurons)
+        """
         if not self.is_built:
             self.ft_build(X.shape[1])
         self.X = X
@@ -73,7 +90,6 @@ class DenseLayer(BaseLayer):
         self.grads["W"] = dW
         self.grads["b"] = db
         return dX
-
 
     def ft_sigmoid(self, Z):
         sigmoid = 1.0 / (1.0 + np.exp(-Z))
@@ -145,8 +161,6 @@ def main():
 
     # plt.plot(output)
     # plt.show()
-
-    
 
 
 if __name__ == "__main__":
