@@ -30,7 +30,7 @@ It serves as an introduction to **deep learning fundamentals**, including forwar
 
 <div align="center">
 
-| Learning curve (Loss vs Epochs) | Learning curve (Metrics vs Epochs |
+| Learning curve (Loss vs Epochs) | Learning curve (Metrics vs Epochs) |
 |:---:|:---:|
 | <img src="https://github.com/user-attachments/assets/334fc0d1-b26e-4fbf-a97e-70eea901ee41" width="500"> | <img src="https://github.com/user-attachments/assets/9fd40fad-1f6d-421f-b133-657a12994b8e" width="500"> |
 
@@ -99,7 +99,7 @@ EPOCH 2
 
 Each layer performs a linear transformation followed by an activation:
 
-**Linear Transformation:**
+**Linear Transformation:**  
 $$
 Z = XW + b
 $$
