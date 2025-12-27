@@ -608,9 +608,9 @@ Stops training when validation loss stops improving:
 
 **Stopping condition**:  
 
-$$
+```math
 \text{val\_loss}_{\text{epoch}} > \text{best\_val\_loss} - \text{min\_delta}
-$$
+```
 
 for `patience` consecutive epochs.
 
