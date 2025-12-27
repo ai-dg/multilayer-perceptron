@@ -393,10 +393,10 @@ Where:
 #### Weight Initialization
 
 To prevent vanishing/exploding gradients, weights are initialized with:
-  
-$$
-\text{limit} = \sqrt{\frac{2.0}{\text{input\dim}}}
-$$
+
+```math
+\text{limit} = \sqrt{\frac{2.0}{\text{input\_dim}}}
+```
 
 This is ideal for ReLU activations (He initialization).
 
