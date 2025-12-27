@@ -100,6 +100,7 @@ EPOCH 2
 Each layer performs a linear transformation followed by an activation:
 
 **Linear Transformation:**  
+
 $$
 Z = XW + b
 $$
