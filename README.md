@@ -402,27 +402,32 @@ This is ideal for ReLU activations (He initialization).
 
 #### Activation Functions
 
-**Sigmoid** (binary output):
+**Sigmoid** (binary output):  
+
 $$
 \sigma(z) = \frac{1}{1 + e^{-z}}
 $$
 
-Derivative:
+Derivative:  
+
 $$
 \sigma'(z) = \sigma(z)(1 - \sigma(z))
 $$
 
-**ReLU** (hidden layers):
+**ReLU** (hidden layers):  
+
 $$
 \text{ReLU}(z) = \max(0, z)
 $$
 
-Derivative:
+Derivative:  
+
 $$
 \text{ReLU}'(z) = \begin{cases} 1 & z > 0 \\ 0 & z \le 0 \end{cases}
 $$
 
-**Softmax** (multi-class output):
+**Softmax** (multi-class output):  
+
 $$
 \text{softmax}(z_i) = \frac{e^{z_i}}{\sum_j e^{z_j}}
 $$
@@ -431,16 +436,20 @@ $$
 
 Given gradient $dA$ from the next layer:
 
-1. **Gradient after activation**:
+1. **Gradient after activation**:  
+
    $$dZ = dA \cdot f'(Z)$$
 
-2. **Weight gradient**:
+3. **Weight gradient**:  
+
    $$dW = X^T dZ$$
 
-3. **Bias gradient**:
+5. **Bias gradient**:  
+
    $$db = \sum dZ$$
 
-4. **Input gradient**:
+7. **Input gradient**:  
+
    $$dX = dZ W^T$$
 
 ---
@@ -449,7 +458,8 @@ Given gradient $dA$ from the next layer:
 
 #### SGD (Stochastic Gradient Descent)
 
-Basic update rule:
+Basic update rule:  
+
 $$
 W := W - \alpha \cdot dW
 $$
@@ -460,22 +470,26 @@ Where $\alpha$ is the learning rate.
 
 Adam combines momentum and adaptive learning rates:
 
-**First moment (momentum)**:
+**First moment (momentum)**:  
+
 $$
 m_t = \beta_1 m_{t-1} + (1-\beta_1) dW
 $$
 
-**Second moment (adaptive)**:
+**Second moment (adaptive)**:  
+
 $$
 v_t = \beta_2 v_{t-1} + (1-\beta_2) dW^2
 $$
 
-**Bias correction**:
+**Bias correction**:  
+
 $$
 \hat{m}_t = \frac{m_t}{1 - \beta_1^t}, \quad \hat{v}_t = \frac{v_t}{1 - \beta_2^t}
 $$
 
-**Weight update**:
+**Weight update**:  
+
 $$
 W := W - \alpha \cdot \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}
 $$
@@ -494,7 +508,8 @@ $$
 L = -\frac{1}{N}\sum_{i=1}^{N} [y_i \log(\hat{y}_i) + (1-y_i)\log(1-\hat{y}_i)]
 $$
 
-**Gradient** (simplified with sigmoid):
+**Gradient** (simplified with sigmoid):  
+
 $$
 \frac{\partial L}{\partial Z} = \hat{y} - y
 $$
@@ -509,7 +524,8 @@ $$
 L = -\frac{1}{N}\sum_{i=1}^{N}\sum_{k=1}^{K} y_{ik}\log(\hat{y}_{ik})
 $$
 
-**Gradient** (simplified with softmax):
+**Gradient** (simplified with softmax):  
+
 $$
 \frac{\partial L}{\partial Z} = \hat{y} - y
 $$
@@ -522,7 +538,8 @@ $$
 L = \frac{1}{N}\sum_{i=1}^{N} (\hat{y}_i - y_i)^2
 $$
 
-**Gradient**:
+**Gradient**:  
+
 $$
 \frac{\partial L}{\partial \hat{y}} = \frac{2}{N}(\hat{y} - y)
 $$
@@ -546,21 +563,24 @@ $$
 
 #### Precision
 
-Measures reliability of positive predictions:
+Measures reliability of positive predictions:  
+
 $$
 \text{Precision} = \frac{TP}{TP + FP}
 $$
 
 #### Recall (Sensitivity)
 
-Measures ability to detect positives:
+Measures ability to detect positives:  
+
 $$
 \text{Recall} = \frac{TP}{TP + FN}
 $$
 
 #### F1-Score
 
-Harmonic mean of precision and recall:
+Harmonic mean of precision and recall:  
+
 $$
 F1 = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}
 $$
@@ -586,7 +606,8 @@ Stores metrics at each epoch:
 
 Stops training when validation loss stops improving:
 
-**Stopping condition**:
+**Stopping condition**:  
+
 $$
 \text{val\_loss}_{\text{epoch}} > \text{best\_val\_loss} - \text{min\_delta}
 $$
