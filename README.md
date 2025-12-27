@@ -105,12 +105,14 @@ $$
 Z = XW + b
 $$
 
-**Activation Function:**
+**Activation Function:**  
+
 $$
 A = f(Z)
 $$
 
-**Complete Forward Pass:**
+**Complete Forward Pass:**  
+
 $$
 X \rightarrow \text{Dense}_1 \rightarrow \text{Dense}_2 \rightarrow \cdots \rightarrow \text{Dense}_L \rightarrow \hat{y}
 $$
