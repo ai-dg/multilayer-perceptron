@@ -754,13 +754,13 @@ The project meets all mandatory requirements:
 - ✅ Command line interface
 
 Bonus features implemented:
-- 🎉 Adam optimizer (advanced optimization)
-- 🎉 Multiple loss functions (BCE, CCE, MSE)
-- 🎉 Multiple metrics (Accuracy, Precision, Recall, F1)
-- 🎉 History tracking during training
-- 🎉 Early stopping callback
-- 🎉 Comprehensive data visualization
-- 🎉 Modular and extensible architecture
+- ✅ Adam optimizer (advanced optimization)
+- ✅ Multiple loss functions (BCE, CCE, MSE)
+- ✅ Multiple metrics (Accuracy, Precision, Recall, F1)
+- ✅ History tracking during training
+- ✅ Early stopping callback
+- ✅ Comprehensive data visualization
+- ✅ Modular and extensible architecture
 
 ---
 
@@ -774,7 +774,7 @@ If you wish to use or study this code, please ensure it complies with **your sch
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 Special thanks to:
 - The Keras and TensorFlow teams for their excellent documentation
