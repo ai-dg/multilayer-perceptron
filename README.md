@@ -1,4 +1,7 @@
-# Multilayer Perceptron 🧠
+# Multilayer Perceptron
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-dg/multilayer-perceptron/blob/main/MLP_Presentation.ipynb) [![View Notebook on GitHub](https://img.shields.io/badge/View%20Notebook-GitHub-black?logo=github)](https://github.com/ai-dg/multilayer-perceptron/blob/main/MLP_Presentation.ipynb)
+
+
 ![Score](https://img.shields.io/badge/Score-125%25-brightgreen)  
 **A neural network implementation from scratch for breast cancer diagnosis using backpropagation**
 
@@ -6,7 +9,7 @@
 
 ---
 
-## 📚 Table of Contents
+## Table of Contents
 
 - [Project Overview](#project-overview)
 - [Features](#features)
